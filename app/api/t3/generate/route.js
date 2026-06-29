@@ -14,94 +14,93 @@ import { safeJson } from '../../../lib/safeJson.js';
 
 const MUAPI_BASE = 'https://api.muapi.ai';
 
-// CHARACTER_MODIFIERS v2 — locked to SpandiLand aesthetic:
-// Semi-realistic Black character faces with AR filter overlay, glowing eyes,
-// sparkle particles, surreal color-graded real-world environments,
-// streetwear clothing, no fantasy armor. Characters feel like real people
-// inside a living AR universe. Palette: purple flora, teal skies, void backgrounds.
+// CHARACTER_MODIFIERS v3 — locked to SpandiLand aesthetic from f3dral.com references
+// Two modes per character type:
+// HUMAN CHARS (Microdjimz, Gwincha, Salpz, Jinga): 
+//   Real-world AR filter aesthetic — photorealistic environments, cartoon-filtered faces
+// ANIMAL/CREATURE CHARS (Bamba, Wolfa): 
+//   Real animals composited into SpandiLand purple-flora world, no cartoon
 const CHARACTER_MODIFIERS = {
   microdjimz: [
-    'semi-realistic Black man, dark skin, natural hair, thoughtful expression,',
-    'wearing a muted purple oversized hoodie and vintage glasses with glowing green lenses,',
-    'AR filter overlay: animated ink glyphs floating around him, gold sparkle particles,',
-    'background: surreal SpandiLand library, purple-leafed trees through tall windows,',
-    'teal ambient light, deep void shadows, photorealistic face with subtle AR enhancement,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
-  ].join(' '),
-
-  bamba: [
-    'semi-realistic Black man, deep dark skin, shaved head, serene closed-eye expression,',
-    'wearing flowing dark indigo robes over a simple white shirt, no shoes,',
-    'AR filter overlay: floating violet orbs orbiting him, soft light emanating from chest,',
-    'background: SpandiLand open field at dusk, purple grass, bioluminescent flora,',
-    'teal gradient sky, mist at ground level, photorealistic face with AR glow overlay,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+    'cartoon AR filter portrait of a dark-skinned Black man with a rounded cartoon face,',
+    'big bright glowing green eyes like a Disney prince, smooth cartoon skin texture,',
+    'wearing a coral pink hoodie with the hood up, dark glasses pushed up on forehead,',
+    'full thick beard, warm expression, adventurous look upward,',
+    'olive-green puffer jacket over the hoodie, sparkle star particles on face,',
+    'background: real outdoor forest scene with teal-green sky, purple-tinted trees,',
+    'SpandiLand AR filter aesthetic — real environment with cartoon-filtered character,',
+    'vertical 9:16 portrait, cinematic, SpandiLand universe by f3dRaL',
   ].join(' '),
 
   gwincha: [
-    'semi-realistic Black man, medium brown skin, locs, intense determined expression,',
-    'wearing a worn grey puffer jacket, dark jeans, white sneakers, ear piercings,',
-    'AR filter overlay: electric cyan sparks at knuckles, animated graffiti rising behind him,',
-    'background: SpandiLand urban street at night, purple-tinted city lights, teal neon reflections,',
-    'real city environment with surreal color grade, photorealistic face with AR spark overlay,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
-  ].join(' '),
-
-  'skylar-nini': [
-    'semi-realistic Black woman, medium brown skin, natural afro, wide visionary eyes,',
-    'wearing a white sleeveless top and black fitted trousers, minimal jewelry, gold ear cuffs,',
-    'AR filter overlay: fractal light patterns on skin, animated star map above her,',
-    'background: SpandiLand rooftop at golden hour, purple blooming trees, teal sky,',
-    'surreal AR environment seamlessly blended with reality, photorealistic face,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
-  ].join(' '),
-
-  jinga: [
-    'giant semi-realistic Black man towering over a real city skyline,',
-    'dark skin, calm powerful expression, natural hair, wearing a simple dark tactical vest,',
-    'AR filter overlay: glowing amber eyes, protective aura radiating outward,',
-    'background: real urban city from below, buildings at knee height, purple-tinted sky,',
-    'colossal scale surreal composition, photorealistic giant figure in real environment,',
-    'cinematic full-body shot, 9:16 vertical, SpandiLand universe',
+    'full 3D CGI render of a fierce Black female warrior, athletic build, dark skin,',
+    'tight hair bun, sharp determined eyes, beautiful yet intimidating expression,',
+    'wearing white form-fitting armour with black tactical vest, ornate black circular shield,',
+    'holding a long silver spear with both hands, combat stance,',
+    'background: dramatic purple-white cloudy sky, floating black oval orbs in grid pattern,',
+    'Pixar-quality CGI character, cinematic lighting, volumetric god rays,',
+    'SpandiLand universe warrior aesthetic, 9:16 vertical cinematic shot',
   ].join(' '),
 
   salpz: [
-    'semi-realistic Black man, sharp angular features, cold calculating expression,',
-    'wearing all-black — sleek jacket, dark turtleneck, geometric dark glasses,',
-    'AR filter overlay: dark smoke wisps from shoulders, glowing red iris eyes,',
-    'background: SpandiLand corporate void space, black marble, deep purple shadows,',
-    'high contrast noir lighting, photorealistic face with dark AR menace overlay,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+    'full 3D CGI render of a menacing Black female adversary, dark skin, sharp features,',
+    'sleek black armour with angular gold accents, cold calculating expression,',
+    'dark energy radiating around her, shadowy cape billowing,',
+    'glowing amber-red eyes, elegant yet dangerous posture,',
+    'background: dark SpandiLand void, deep purple shadows, floating dark geometric shapes,',
+    'Pixar-quality CGI villain character, dramatic rim lighting, high contrast,',
+    'SpandiLand universe adversary aesthetic, 9:16 vertical cinematic shot',
+  ].join(' '),
+
+  bamba: [
+    'a real baby deer fawn, warm russet-brown spotted coat, tiny black hooves,',
+    'small alert ears, big innocent dark eyes, delicate long neck,',
+    'lying or walking in SpandiLand purple grass field,',
+    'background: aerial or eye-level view of purple lavender-like ground cover,',
+    'small purple wildflowers, warm amber light, teal-tinged shadows,',
+    'photorealistic animal in surreal colour-graded SpandiLand world,',
+    'child-friendly magical atmosphere, no cartoon, real fawn in fantasy world,',
+    '9:16 vertical, SpandiLand universe by f3dRaL',
+  ].join(' '),
+
+  wolfa: [
+    'a real wolf pup with a fluffy grey-silver coat, bright curious amber eyes,',
+    'small fierce expression mixed with adorable fluffiness, pointed ears,',
+    'sitting alert in SpandiLand purple grass field,',
+    'background: purple-toned ground cover, teal-lit forest edge, warm golden light,',
+    'photorealistic wolf pup in surreal SpandiLand colour world,',
+    'cute yet fierce energy, child-friendly, magical atmosphere,',
+    '9:16 vertical, SpandiLand universe by f3dRaL',
+  ].join(' '),
+
+  jinga: [
+    'colossal 3D CGI giant warrior towering over a real city skyline,',
+    'dark-skinned Black male figure, powerful calm expression, natural hair,',
+    'wearing dark tactical armour with amber glowing accents,',
+    'city buildings at knee level, real urban environment below,',
+    'dramatic purple-tinted sky, golden hour light, atmospheric haze,',
+    'the wanderer giant aesthetic — CGI character composited into real cityscape,',
+    'SpandiLand universe, cinematic full-body shot, 9:16 vertical',
+  ].join(' '),
+
+  'skylar-nini': [
+    'cartoon AR filter portrait of a Black woman with a radiant cartoon face,',
+    'big luminous gold eyes, natural afro halo, warm glowing skin,',
+    'wearing a white sleeveless top, gold ear cuffs, visionary upward gaze,',
+    'animated fractal light patterns floating around her, star sparkles,',
+    'background: SpandiLand rooftop golden hour, purple blooming trees, teal sky,',
+    'SpandiLand AR filter aesthetic — real environment with cartoon-filtered character,',
+    'vertical 9:16 portrait, cinematic, SpandiLand universe by f3dRaL',
   ].join(' '),
 
   dolphia: [
-    'semi-realistic Black woman, deep skin, locs adorned with teal shells,',
-    'wearing a flowing teal and violet garment that moves like water,',
-    'AR filter overlay: animated water ripples on skin, bioluminescent particles,',
-    'background: SpandiLand Aqua Realm, purple coral, teal deep-water light,',
-    'surreal underwater-above-water hybrid world, photorealistic face,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
-  ].join(' '),
-
-  fanfa: [
-    'semi-realistic Black child, bright curious eyes, glowing bioluminescent skin markings,',
-    'wearing a simple silver-white tunic with teal trim,',
-    'AR filter overlay: animated light fish swimming around them, sparkle trail,',
-    'background: SpandiLand Aqua Realm shallows, purple sand, teal water glow,',
-    'warm magical atmosphere, photorealistic face with luminescent AR overlay,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
-  ].join(' '),
-
-  dale: [
-    'semi-realistic Black man, athletic build, wide adventurous grin, natural hair,',
-    'wearing a deep-sea explorer jacket in dark teal and black, goggles pushed up on head,',
-    'AR filter overlay: compass rose AR hud elements, animated depth markers,',
-    'background: SpandiLand Aqua Realm surface, purple horizon, teal ocean, strange sky,',
-    'sense of discovery and momentum, photorealistic face with AR explorer overlay,',
-    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+    'full 3D CGI Black female figure, fluid oceanic movement, teal-scaled accents,',
+    'flowing violet and teal garments, locs adorned with glowing shells,',
+    'background: SpandiLand Aqua Realm — purple coral, bioluminescent teal water,',
+    'Pixar-quality CGI character, underwater light rays, magical atmosphere,',
+    '9:16 vertical cinematic, SpandiLand Aqua Realm',
   ].join(' '),
 };
-
 const PLATFORM_AR = {
   tiktok: '9:16',
   ig: '4:5',
