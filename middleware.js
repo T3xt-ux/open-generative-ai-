@@ -1,33 +1,17 @@
 import { NextResponse } from 'next/server';
 
+// NOTE: /api/v1/* is fully handled by app/api/api/v1/[[...path]]/route.js
+// and its specialised sub-routes. The middleware no longer rewrites /api/v1
+// to avoid a dead-code proxy path that bypasses cookie-based auth injection.
+//
+// /api/app/* and /api/workflow/* have dedicated Route Handlers at
+// app/api/app/[[...path]] and app/api/workflow/[[...path]] respectively,
+// so this middleware is a pass-through stub kept for clarity.
+
 export function middleware(request) {
-    const url = request.nextUrl;
-    
-    // Catch requests to /api/workflow, /api/app, and /api/v1
-    const isMuApi = url.pathname.startsWith('/api/workflow') || 
-                    url.pathname.startsWith('/api/app') || 
-                    url.pathname.startsWith('/api/v1');
-
-    if (isMuApi) {
-        // Exclude paths that have their own dedicated route handlers with custom logic
-        const isHandledByRoute = url.pathname.startsWith('/api/v1/creative-agent') || 
-                                url.pathname.startsWith('/api/v1/get_upload_url') ||
-                                url.pathname.startsWith('/api/v1/upload-binary');
-
-        if (url.pathname.startsWith('/api/v1') && !isHandledByRoute) {
-            const targetUrl = new URL(url.pathname + url.search, 'https://api.muapi.ai');
-            return NextResponse.rewrite(targetUrl);
-        }
-    }
-
-    return NextResponse.next();
+  return NextResponse.next();
 }
 
-// Match the paths we want to proxy
 export const config = {
-    matcher: [
-        '/api/workflow/:path*', 
-        '/api/app/:path*',
-        '/api/v1/:path*'
-    ],
+  matcher: [], // All routes served by Route Handlers directly — no middleware rewrites needed
 };

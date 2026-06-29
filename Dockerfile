@@ -7,6 +7,7 @@ COPY package*.json ./
 COPY packages/Vibe-Workflow/packages/workflow-builder/package*.json ./packages/Vibe-Workflow/packages/workflow-builder/
 COPY packages/Open-Poe-AI/packages/agents/package*.json ./packages/Open-Poe-AI/packages/agents/
 COPY packages/studio/package*.json ./packages/studio/
+COPY packages/Open-AI-Design-Agent/packages/design-agent/package*.json ./packages/Open-AI-Design-Agent/packages/design-agent/
 RUN npm install
 
 # Build sub-packages

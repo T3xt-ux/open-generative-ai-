@@ -120,13 +120,24 @@ export class MuapiClient {
      * @param {number} maxAttempts - Maximum polling attempts (default 60 = ~2 min)
      * @param {number} interval - Polling interval in ms (default 2000)
      */
-    async pollForResult(requestId, key, maxAttempts = 60, interval = 2000) {
+    /**
+     * Polls the predictions endpoint until the result is ready.
+     * @param {string} requestId
+     * @param {string} key
+     * @param {number} maxAttempts  - default 60 (~2 min for images)
+     * @param {number} interval     - base interval in ms, default 2000
+     * @param {Function} [onPoll]   - optional progress callback: ({attempt, maxAttempts, elapsedSec})
+     */
+    async pollForResult(requestId, key, maxAttempts = 60, interval = 2000, onPoll) {
         const pollUrl = `${this.baseUrl}/api/v1/predictions/${requestId}/result`;
+        let backoff = interval;
 
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            await new Promise(resolve => setTimeout(resolve, interval));
+            await new Promise(resolve => setTimeout(resolve, backoff));
 
-            console.log(`[Muapi] Polling attempt ${attempt}/${maxAttempts}...`);
+            if (onPoll) {
+                onPoll({ attempt, maxAttempts, elapsedSec: Math.round(attempt * backoff / 1000) });
+            }
 
             try {
                 const response = await fetch(pollUrl, {
@@ -139,15 +150,18 @@ export class MuapiClient {
 
                 if (!response.ok) {
                     const errText = await response.text();
-                    console.warn(`[Muapi] Poll error (${response.status}):`, errText);
-                    // Continue polling on non-fatal errors
-                    if (response.status >= 500) continue;
+                    if (response.status >= 500) {
+                        // Exponential backoff on server errors, cap at 10s
+                        backoff = Math.min(backoff * 1.5, 10000);
+                        continue;
+                    }
                     throw new Error(`Poll Failed: ${response.status} - ${errText.slice(0, 100)}`);
                 }
 
-                const data = await response.json();
-                console.log('[Muapi] Poll Response:', data);
+                // Reset backoff on successful response
+                backoff = interval;
 
+                const data = await response.json();
                 const status = data.status?.toLowerCase();
 
                 if (status === 'completed' || status === 'succeeded' || status === 'success') {
@@ -158,14 +172,13 @@ export class MuapiClient {
                     throw new Error(`Generation failed: ${data.error || 'Unknown error'}`);
                 }
 
-                // Otherwise (processing, pending, etc.) keep polling
+                // Still processing — keep polling
             } catch (error) {
                 if (attempt === maxAttempts) throw error;
-                console.warn('[Muapi] Poll attempt failed, retrying...', error.message);
             }
         }
 
-        throw new Error('Generation timed out after polling.');
+        throw new Error(`Generation timed out after ${Math.round(maxAttempts * backoff / 1000)}s of polling.`);
     }
 
     async generateVideo(params) {

@@ -119,7 +119,27 @@ function readConfig() {
     catch { return { url: '' }; }
 }
 function writeConfig(cfg) { fs.writeFileSync(CONFIG_FILE, JSON.stringify(cfg, null, 2)); }
-function normalizeUrl(url) { return (url || '').trim().replace(/\/+$/, ''); }
+// Validate and normalize a user-supplied Wan2GP server URL.
+// Only http:// and https:// are accepted.
+// Private/loopback ranges are NOT blocked because Wan2GP is by design
+// a local-network or localhost Gradio server — the user runs it themselves.
+// However we reject non-HTTP protocols (file://, ftp://, etc.) to prevent
+// protocol confusion attacks.
+function normalizeUrl(url) {
+    const trimmed = (url || '').trim().replace(/\/+$/, '');
+    if (!trimmed) return '';
+    try {
+        const parsed = new URL(trimmed);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+            console.warn('[wan2gp] Rejected non-HTTP URL:', parsed.protocol);
+            return '';
+        }
+        return trimmed;
+    } catch {
+        console.warn('[wan2gp] Rejected malformed URL:', trimmed.slice(0, 60));
+        return '';
+    }
+}
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let activeAbort = null;

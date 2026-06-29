@@ -1,0 +1,19 @@
+{
+  "name": "open-generative-ai-t3",
+  "framework": "nextjs",
+  "buildCommand": "git submodule update --init --recursive || true && npm run build:packages && next build",
+  "installCommand": "npm install",
+  "outputDirectory": ".next",
+  "env": {
+    "MUAPI_PROXY_DEBUG": "0",
+    "UPLOAD_PROXY_ALLOWED_HOSTS": ""
+  },
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 60
+    },
+    "app/api/t3/generate/route.js": {
+      "maxDuration": 120
+    }
+  }
+}

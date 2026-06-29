@@ -11,7 +11,6 @@ const DesignAgentStudio = dynamic(() => import('studio').then(mod => mod.DesignA
 });
 import axios from 'axios';
 import ApiKeyModal from './ApiKeyModal';
-import StudioErrorBoundary from './StudioErrorBoundary';
 
 const TABS = [
   { id: 'image',   label: 'Image Studio' },
@@ -71,7 +70,10 @@ export default function StandaloneShell() {
   const [showSettings, setShowSettings] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [hasMounted, setHasMounted] = useState(false);
-
+  const [showVadooBanner, setShowVadooBanner] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('vadoo_banner_dismissed') !== '1';
+    return true;
+  });
 
   // Drag and Drop State
   const [isDragging, setIsDragging] = useState(false);
@@ -121,10 +123,7 @@ export default function StandaloneShell() {
     if ((fromBuilder && activeTab !== 'workflows') || (fromDesignAgent && activeTab !== 'design-agent')) {
       sessionStorage.removeItem("fromWorkflowBuilder");
       sessionStorage.removeItem("fromDesignAgent");
-      // Remove any style elements injected by sub-package builders
-      // without triggering a full page reload that destroys React state
-      document.querySelectorAll('[data-workflow-builder-style],[data-design-agent-style]')
-        .forEach(el => el.remove());
+      window.location.reload();
     }
   }, [activeTab]);
 
@@ -144,8 +143,7 @@ export default function StandaloneShell() {
       setApiKey(stored);
       fetchBalance(stored);
       // Sync cookie immediately on mount to establish identity for background requests
-      const _secureFlag = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
-      document.cookie = `muapi_key=${stored}; path=/; max-age=604800; SameSite=Lax${_secureFlag}`;
+      document.cookie = `muapi_key=${stored}; path=/; max-age=31536000; SameSite=Lax`;
     }
   }, [fetchBalance]);
 
@@ -153,8 +151,7 @@ export default function StandaloneShell() {
     localStorage.setItem(STORAGE_KEY, key);
     setApiKey(key);
     fetchBalance(key);
-    const _sf = typeof location !== 'undefined' && location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `muapi_key=${key}; path=/; max-age=604800; SameSite=Lax${_sf}`;
+    document.cookie = `muapi_key=${key}; path=/; max-age=31536000; SameSite=Lax`;
   }, [fetchBalance]);
 
   const handleKeyChange = useCallback(() => {
@@ -268,7 +265,29 @@ export default function StandaloneShell() {
         </div>
       )}
 
-
+      {/* Vadoo promo banner */}
+      {showVadooBanner && (
+        <div className="flex-shrink-0 w-full bg-indigo-600 flex items-center justify-center px-4 py-2 gap-3 relative z-50">
+          <a
+            href="https://vadoo.tv"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[13px] font-bold text-white hover:opacity-80 transition-opacity text-center"
+          >
+            Unrestricted AI Images &amp; Videos → Auto-Publish as YouTube Shorts &amp; TikToks, Earn ↗
+          </a>
+          <button
+            onClick={() => {
+              setShowVadooBanner(false);
+              localStorage.setItem('vadoo_banner_dismissed', '1');
+            }}
+            className="absolute right-3 text-white/60 hover:text-white transition-colors text-lg leading-none"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Header */}
       {isHeaderVisible && (
@@ -317,7 +336,7 @@ export default function StandaloneShell() {
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-white/90">
-                  ${balance !== null ? `$${Number(balance).toFixed(2)}` : '---'}
+                  ${balance !== null ? `${balance}` : '---'}
                 </span>
               </div>
             </div>
@@ -339,21 +358,19 @@ export default function StandaloneShell() {
 
       {/* Studio Content */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
-        <StudioErrorBoundary key={activeTab}>
-          {activeTab === 'image'   && <ImageStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-          {activeTab === 'video'   && <VideoStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-          {activeTab === 'clipping' && <ClippingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-          {activeTab === 'vibe-motion' && <VibeMotionStudio apiKey={apiKey} />}
-          {activeTab === 'lipsync' && <LipSyncStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-          {activeTab === 'body-swap' && <RecastStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-          {activeTab === 'cinema'  && <CinemaStudio  apiKey={apiKey} />}
-          {activeTab === 'audio'   && <AudioStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-          {activeTab === 'marketing' && <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
-          {activeTab === 'workflows' && <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
-          {activeTab === 'agents' && <AgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
-          {activeTab === 'design-agent' && <DesignAgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
-          {activeTab === 'apps' && <AppsStudio apiKey={apiKey} />}
-        </StudioErrorBoundary>
+        {activeTab === 'image'   && <ImageStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'video'   && <VideoStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'clipping' && <ClippingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'vibe-motion' && <VibeMotionStudio apiKey={apiKey} />}
+        {activeTab === 'lipsync' && <LipSyncStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'body-swap' && <RecastStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'cinema'  && <CinemaStudio  apiKey={apiKey} />}
+        {activeTab === 'audio'   && <AudioStudio   apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'marketing' && <MarketingStudio apiKey={apiKey} droppedFiles={droppedFiles} onFilesHandled={handleFilesHandled} />}
+        {activeTab === 'workflows' && <WorkflowStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'agents' && <AgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'design-agent' && <DesignAgentStudio apiKey={apiKey} isHeaderVisible={isHeaderVisible} onToggleHeader={setIsHeaderVisible} />}
+        {activeTab === 'apps' && <AppsStudio apiKey={apiKey} />}
       </div>
 
       {/* Settings Modal */}
