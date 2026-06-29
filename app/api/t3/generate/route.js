@@ -14,16 +14,92 @@ import { safeJson } from '../../../lib/safeJson.js';
 
 const MUAPI_BASE = 'https://api.muapi.ai';
 
+// CHARACTER_MODIFIERS v2 — locked to SpandiLand aesthetic:
+// Semi-realistic Black character faces with AR filter overlay, glowing eyes,
+// sparkle particles, surreal color-graded real-world environments,
+// streetwear clothing, no fantasy armor. Characters feel like real people
+// inside a living AR universe. Palette: purple flora, teal skies, void backgrounds.
 const CHARACTER_MODIFIERS = {
-  microdjimz:    'Afro-Surrealist protagonist wordsmith poet, muted purple knitted texture aesthetic, gold accents, mystical urban energy',
-  bamba:         'Afro-Surrealist mystic figure, deep spiritual presence, indigo violet tones, felt texture, ethereal atmosphere',
-  gwincha:       'Afro-Surrealist rebel character, dynamic pose, bold energy, dark void background with electric accents',
-  'skylar-nini': 'Afro-Surrealist visionary, futuristic elements, muted blue-purple palette, gold highlights, dreamlike quality',
-  jinga:         'Afro-Surrealist protector figure, powerful and grounded, earth tones with purple accents, guardian presence',
-  salpz:         'Afro-Surrealist adversary, sharp contrasting elements, tension in composition, deep shadow aesthetic',
-  dolphia:       'Aqua Realm character, fluid oceanic movement, teal and deep blue palette, surreal underwater world',
-  fanfa:         'Aqua Realm spirit, luminescent quality, water-light refraction, mystical deep-sea aesthetic',
-  dale:          'Aqua Realm explorer, adventurous energy, coral and ocean palette, Afro-Surrealist underwater world',
+  microdjimz: [
+    'semi-realistic Black man, dark skin, natural hair, thoughtful expression,',
+    'wearing a muted purple oversized hoodie and vintage glasses with glowing green lenses,',
+    'AR filter overlay: animated ink glyphs floating around him, gold sparkle particles,',
+    'background: surreal SpandiLand library, purple-leafed trees through tall windows,',
+    'teal ambient light, deep void shadows, photorealistic face with subtle AR enhancement,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  bamba: [
+    'semi-realistic Black man, deep dark skin, shaved head, serene closed-eye expression,',
+    'wearing flowing dark indigo robes over a simple white shirt, no shoes,',
+    'AR filter overlay: floating violet orbs orbiting him, soft light emanating from chest,',
+    'background: SpandiLand open field at dusk, purple grass, bioluminescent flora,',
+    'teal gradient sky, mist at ground level, photorealistic face with AR glow overlay,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  gwincha: [
+    'semi-realistic Black man, medium brown skin, locs, intense determined expression,',
+    'wearing a worn grey puffer jacket, dark jeans, white sneakers, ear piercings,',
+    'AR filter overlay: electric cyan sparks at knuckles, animated graffiti rising behind him,',
+    'background: SpandiLand urban street at night, purple-tinted city lights, teal neon reflections,',
+    'real city environment with surreal color grade, photorealistic face with AR spark overlay,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  'skylar-nini': [
+    'semi-realistic Black woman, medium brown skin, natural afro, wide visionary eyes,',
+    'wearing a white sleeveless top and black fitted trousers, minimal jewelry, gold ear cuffs,',
+    'AR filter overlay: fractal light patterns on skin, animated star map above her,',
+    'background: SpandiLand rooftop at golden hour, purple blooming trees, teal sky,',
+    'surreal AR environment seamlessly blended with reality, photorealistic face,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  jinga: [
+    'giant semi-realistic Black man towering over a real city skyline,',
+    'dark skin, calm powerful expression, natural hair, wearing a simple dark tactical vest,',
+    'AR filter overlay: glowing amber eyes, protective aura radiating outward,',
+    'background: real urban city from below, buildings at knee height, purple-tinted sky,',
+    'colossal scale surreal composition, photorealistic giant figure in real environment,',
+    'cinematic full-body shot, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  salpz: [
+    'semi-realistic Black man, sharp angular features, cold calculating expression,',
+    'wearing all-black — sleek jacket, dark turtleneck, geometric dark glasses,',
+    'AR filter overlay: dark smoke wisps from shoulders, glowing red iris eyes,',
+    'background: SpandiLand corporate void space, black marble, deep purple shadows,',
+    'high contrast noir lighting, photorealistic face with dark AR menace overlay,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  dolphia: [
+    'semi-realistic Black woman, deep skin, locs adorned with teal shells,',
+    'wearing a flowing teal and violet garment that moves like water,',
+    'AR filter overlay: animated water ripples on skin, bioluminescent particles,',
+    'background: SpandiLand Aqua Realm, purple coral, teal deep-water light,',
+    'surreal underwater-above-water hybrid world, photorealistic face,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  fanfa: [
+    'semi-realistic Black child, bright curious eyes, glowing bioluminescent skin markings,',
+    'wearing a simple silver-white tunic with teal trim,',
+    'AR filter overlay: animated light fish swimming around them, sparkle trail,',
+    'background: SpandiLand Aqua Realm shallows, purple sand, teal water glow,',
+    'warm magical atmosphere, photorealistic face with luminescent AR overlay,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
+
+  dale: [
+    'semi-realistic Black man, athletic build, wide adventurous grin, natural hair,',
+    'wearing a deep-sea explorer jacket in dark teal and black, goggles pushed up on head,',
+    'AR filter overlay: compass rose AR hud elements, animated depth markers,',
+    'background: SpandiLand Aqua Realm surface, purple horizon, teal ocean, strange sky,',
+    'sense of discovery and momentum, photorealistic face with AR explorer overlay,',
+    'cinematic portrait, 9:16 vertical, SpandiLand universe',
+  ].join(' '),
 };
 
 const PLATFORM_AR = {
@@ -83,7 +159,7 @@ export async function POST(request) {
   const finalPrompt = prompt_override || [
     hook,
     charMod,
-    'SpandiLand universe, Afro-Surrealist, knitted felt 3D aesthetic, palette #4A3F6B #2E2A4A #C9A84C',
+    'SpandiLand universe, semi-realistic AR aesthetic, photorealistic Black character, surreal color-graded real environment, AR filter overlay, purple and teal palette, no fantasy armor, no cartoon style',
   ].filter(Boolean).join('. ');
 
   try {
