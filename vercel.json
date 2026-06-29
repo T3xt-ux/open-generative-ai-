@@ -15,5 +15,13 @@
     "app/api/t3/generate/route.js": {
       "maxDuration": 120
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "x-vercel-protection-bypass", "value": "true" }
+      ]
+    }
+  ]
 }
