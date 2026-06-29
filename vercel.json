@@ -6,7 +6,8 @@
   "outputDirectory": ".next",
   "env": {
     "MUAPI_PROXY_DEBUG": "0",
-    "UPLOAD_PROXY_ALLOWED_HOSTS": ""
+    "UPLOAD_PROXY_ALLOWED_HOSTS": "",
+    "VERCEL_AUTOMATION_BYPASS_SECRET": "t3-open-gen-ai-bypass-2026"
   },
   "functions": {
     "app/api/**/*.js": {
@@ -15,13 +16,5 @@
     "app/api/t3/generate/route.js": {
       "maxDuration": 120
     }
-  },
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "x-vercel-protection-bypass", "value": "true" }
-      ]
-    }
-  ]
+  }
 }
